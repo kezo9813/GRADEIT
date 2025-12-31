@@ -1,6 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 import Image from "next/image";
 
+import { Avatar } from "@/components/Avatar";
 import { PostCard } from "@/components/PostCard";
 import { attachProfilesToPosts } from "@/lib/profile";
 import { buildPublicAvatarUrl } from "@/lib/media";
@@ -16,7 +16,7 @@ export default async function UserProfilePage({ params }: { params: { id: string
   const [{ data: profile }, { data: authData }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, full_name, avatar_path")
+      .select("id, full_name, avatar_path, updated_at")
       .eq("id", params.id)
       .maybeSingle(),
     supabase.auth.getUser(),
@@ -48,8 +48,8 @@ export default async function UserProfilePage({ params }: { params: { id: string
             <Image
               src={avatarUrl}
               alt={`${profileData.full_name ?? "User"} avatar`}
-              width={80}
-              height={80}
+              width={88}
+              height={88}
               style={{
                 borderRadius: "50%",
                 border: "1px solid rgba(255,255,255,0.1)",
@@ -57,23 +57,7 @@ export default async function UserProfilePage({ params }: { params: { id: string
               }}
             />
           ) : (
-            <div
-              style={{
-                width: 80,
-                height: 80,
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #4de2c6, #7ff1d8)",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#071017",
-                fontWeight: 700,
-                border: "1px solid rgba(255,255,255,0.1)",
-                overflow: "hidden",
-              }}
-            >
-              {profileData.full_name?.slice(0, 1).toUpperCase() ?? "U"}
-            </div>
+            <Avatar profile={profileData} size={88} />
           )}
           <div className="stack" style={{ gap: 4 }}>
             <h1 className="section-title" style={{ margin: 0 }}>

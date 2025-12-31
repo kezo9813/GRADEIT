@@ -2,16 +2,17 @@
 
 :root {
   color-scheme: light;
-  --bg: #0c0f17;
-  --panel: #121725;
-  --muted: #9ca3b8;
+  --bg: #0b0d15;
+  --panel: #0f111c;
+  --muted: #a5aec2;
   --accent: #4de2c6;
-  --accent-strong: #2cc2b2;
+  --accent-strong: #30c2b1;
   --danger: #ff5f7a;
   --text: #f7f8fb;
-  --border: rgba(255, 255, 255, 0.08);
-  --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
-  --radius: 14px;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  --radius: 16px;
 }
 
 * {
@@ -37,15 +38,22 @@ a {
 .shell {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 32px 20px 80px;
+  padding: 24px 20px 80px;
 }
 
 .panel {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   backdrop-filter: blur(14px);
+  transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+}
+
+.panel:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 26px 65px rgba(0, 0, 0, 0.5);
 }
 
 .btn {
@@ -62,6 +70,12 @@ a {
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 160ms ease;
   box-shadow: 0 12px 28px rgba(77, 226, 198, 0.35);
+}
+
+.btn.icon {
+  width: 64px;
+  height: 64px;
+  padding: 0;
 }
 
 .btn:hover {
@@ -195,6 +209,12 @@ label {
   color: #9ff5df;
 }
 
+.pill.muted {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border);
+  color: var(--muted);
+}
+
 .badge {
   display: inline-flex;
   align-items: center;
@@ -218,7 +238,12 @@ label {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 0 22px;
+  padding: 14px 0 18px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: linear-gradient(180deg, rgba(11, 14, 22, 0.9), rgba(11, 14, 22, 0.7));
+  backdrop-filter: blur(12px);
 }
 
 .brand {
@@ -228,6 +253,7 @@ label {
   font-weight: 800;
   letter-spacing: 0.5px;
   color: #f4f6fb;
+  margin-left: 5%;
 }
 
 .brand span {
@@ -242,7 +268,7 @@ label {
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .rating {
@@ -266,7 +292,7 @@ label {
 }
 
 form {
-  width: 100%;
+  margin: 0.5rem;  
 }
 
 .section-title {
@@ -314,6 +340,12 @@ form {
 @media (max-width: 900px) {
   .hero {
     grid-template-columns: 1fr;
+  }
+
+  .nav {
+    position: static;
+    border-radius: 12px;
+    margin-bottom: 7%;
   }
 }
 

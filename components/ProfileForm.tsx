@@ -22,11 +22,17 @@ export function ProfileForm({ userId, profile }: ProfileFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const avatarUrl = buildPublicAvatarUrl(profile?.avatar_path);
+  const cacheBust =
+    profile?.updated_at && !Number.isNaN(Date.parse(profile.updated_at))
+      ? `?v=${new Date(profile.updated_at).getTime()}`
+      : "";
+  const avatarUrl = previewUrl ?? buildPublicAvatarUrl(profile?.avatar_path)?.concat(cacheBust) ?? null;
 
   const handleFile = (f: File | null) => {
     setFile(null);
+    setPreviewUrl(null);
     if (!f) return;
     if (!f.type.startsWith("image/")) {
       setStatus("Avatar must be an image.");
@@ -37,6 +43,7 @@ export function ProfileForm({ userId, profile }: ProfileFormProps) {
       return;
     }
     setFile(f);
+    setPreviewUrl(URL.createObjectURL(f));
     setStatus(null);
   };
 
@@ -66,6 +73,7 @@ export function ProfileForm({ userId, profile }: ProfileFormProps) {
           await supabase.storage.from("avatars").remove([profile.avatar_path]);
         }
         newAvatarPath = path;
+        setPreviewUrl(buildPublicAvatarUrl(path));
       }
 
       const { error: upsertError } = await supabase

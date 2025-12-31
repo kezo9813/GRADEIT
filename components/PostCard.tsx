@@ -7,6 +7,8 @@ import { formatProfileName } from "@/lib/profile";
 import type { PostWithStats } from "@/lib/types";
 
 import { RatingWidget } from "./RatingWidget";
+import { RatingList } from "./RatingList";
+import { RateForm } from "./RateForm";
 
 type PostCardProps = {
   post: PostWithStats;
@@ -17,6 +19,7 @@ type PostCardProps = {
 export function PostCard({ post, userId, showActions }: PostCardProps) {
   const mediaUrl = buildPublicMediaUrl(post.media_path);
   const created = new Date(post.created_at);
+  const userRating = post.ratings_with_profiles?.find((r) => r.user_id === userId);
 
   return (
     <article className="panel card">
@@ -32,9 +35,6 @@ export function PostCard({ post, userId, showActions }: PostCardProps) {
         </Link>
         <div className="row" style={{ gap: 8 }}>
           <span className="badge">{post.kind.toUpperCase()}</span>
-          <Link className="pill" href={`/p/${post.id}`}>
-            Open ↗
-          </Link>
         </div>
       </div>
 
@@ -63,19 +63,18 @@ export function PostCard({ post, userId, showActions }: PostCardProps) {
               {post.rating_count === 1 ? "" : "s"}
             </span>
           </div>
-          {showActions ? null : (
-            <span className="muted">{post.user_rating ? `You rated ${post.user_rating}` : "Not rated"}</span>
-          )}
         </div>
 
         {showActions ? (
-          <RatingWidget
-            postId={post.id}
-            initialValue={post.user_rating}
-            canRate={Boolean(userId)}
-            initialAvg={post.avg_rating}
-            initialCount={post.rating_count}
-          />
+          <>
+            <RateForm
+              postId={post.id}
+              initialValue={post.user_rating}
+              initialComment={userRating?.comment ?? null}
+              canRate={Boolean(userId)}
+            />
+            <RatingList ratings={post.ratings_with_profiles ?? []} />
+          </>
         ) : null}
       </div>
     </article>

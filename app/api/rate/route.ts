@@ -17,6 +17,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const postId = body?.postId as string | undefined;
   const value = Number(body?.value);
+  const comment =
+    typeof body?.comment === "string" && body.comment.trim().length > 0
+      ? body.comment.trim().slice(0, 500)
+      : null;
 
   if (!postId) {
     return applyCookies(NextResponse.json({ error: "Missing post id" }, { status: 400 }));
@@ -40,7 +44,7 @@ export async function POST(req: NextRequest) {
 
   const { error: upsertError } = await supabase
     .from("ratings")
-    .upsert({ post_id: postId, user_id: user.id, value }, { onConflict: "post_id,user_id" });
+    .upsert({ post_id: postId, user_id: user.id, value, comment }, { onConflict: "post_id,user_id" });
 
   if (upsertError) {
     return applyCookies(NextResponse.json({ error: upsertError.message }, { status: 400 }));

@@ -4,12 +4,13 @@ import { notFound } from "next/navigation";
 
 import { Avatar } from "@/components/Avatar";
 import { DeleteButton } from "@/components/DeleteButton";
-import { RatingWidget } from "@/components/RatingWidget";
 import { buildPublicMediaUrl } from "@/lib/media";
 import { formatProfileName } from "@/lib/profile";
 import { toPostWithStats } from "@/lib/posts";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { PostWithRatings } from "@/lib/types";
+import type { PostWithRatings, RatingWithProfile } from "@/lib/types";
+import { RateForm } from "@/components/RateForm";
+import { RatingList } from "@/components/RatingList";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export default async function PostDetailPage({
     supabase
       .from("posts")
       .select(
-        "id,created_at,user_id,kind,title,text_content,media_path,media_mime,video_duration_ms,deleted, ratings:ratings(user_id,value)",
+        "id,created_at,user_id,kind,title,text_content,media_path,media_mime,video_duration_ms,deleted, ratings:ratings(user_id,value,comment,updated_at)",
       )
       .eq("id", params.id)
       .limit(1),
@@ -39,26 +40,42 @@ export default async function PostDetailPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, full_name, avatar_path")
+    .select("id, full_name, avatar_path, updated_at")
     .eq("id", record.user_id)
     .maybeSingle();
+
+  const { data: ratingRows } = await supabase
+    .from("ratings")
+    .select("user_id, value, comment, updated_at")
+    .eq("post_id", params.id)
+    .order("updated_at", { ascending: false });
+
+  const ratingUserIds = Array.from(new Set((ratingRows ?? []).map((r) => r.user_id)));
+  const { data: ratingProfiles } =
+    ratingUserIds.length > 0
+      ? await supabase.from("profiles").select("id, full_name, avatar_path, updated_at").in("id", ratingUserIds)
+      : { data: [] };
 
   const userId = userData.user?.id ?? null;
   const post = { ...toPostWithStats(record, userId), profile: profile ?? null };
   const mediaUrl = buildPublicMediaUrl(post.media_path);
   const created = new Date(post.created_at);
   const isOwner = userId === post.user_id;
+  const ratingsWithProfiles: RatingWithProfile[] = (ratingRows ?? []).map((r) => ({
+    ...r,
+    profile: ratingProfiles?.find((p) => p.id === r.user_id) ?? null,
+  }));
 
   return (
     <main className="stack">
       <article className="panel card" style={{ padding: 20 }}>
-        <div className="row" style={{ justifyContent: "space-between" }}>
+        <div className="row" style={{ justifyContent: "space-between", gap: 12, alignItems: "center" }}>
           <Link
             className="row"
             style={{ gap: 12, alignItems: "center", textDecoration: "none" }}
             href={`/u/${post.user_id}`}
           >
-            <Avatar profile={post.profile} size={48} />
+            <Avatar profile={post.profile} size={52} />
             <div className="stack" style={{ gap: 2 }}>
               <span className="pill soft">{formatProfileName(post.profile)}</span>
               <span className="muted" style={{ fontSize: 12 }}>
@@ -100,16 +117,21 @@ export default async function PostDetailPage({
               {formatProfileName(post.profile)}
             </Link>
           </div>
-          <RatingWidget
+          <RateForm
             postId={post.id}
             initialValue={post.user_rating}
+            initialComment={
+              ratingsWithProfiles.find((r) => r.user_id === userId)?.comment ?? null
+            }
             canRate={Boolean(userId)}
-            initialAvg={post.avg_rating}
-            initialCount={post.rating_count}
           />
           {isOwner ? <DeleteButton postId={post.id} redirectTo="/" /> : null}
         </div>
       </article>
+      <div className="stack">
+        <h2 className="section-title">Ratings & comments</h2>
+        <RatingList ratings={ratingsWithProfiles} />
+      </div>
     </main>
   );
 }

@@ -9,6 +9,10 @@ type AvatarProps = {
 };
 
 export function Avatar({ profile, size = 40 }: AvatarProps) {
+  const cacheBust =
+    profile?.updated_at && !Number.isNaN(Date.parse(profile.updated_at))
+      ? `?v=${new Date(profile.updated_at).getTime()}`
+      : "";
   const src = buildPublicAvatarUrl(profile?.avatar_path);
   const label = profile?.full_name || "User";
   if (src) {
@@ -22,7 +26,7 @@ export function Avatar({ profile, size = 40 }: AvatarProps) {
           border: "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        <Image src={src} alt={`${label} avatar`} width={size} height={size} />
+        <Image src={`${src}${cacheBust}`} alt={`${label} avatar`} width={size} height={size} />
       </div>
     );
   }

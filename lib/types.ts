@@ -4,6 +4,7 @@ export type ProfileRecord = {
   id: string;
   full_name: string | null;
   avatar_path: string | null;
+  updated_at?: string | null;
 };
 
 export type PostRecord = {
@@ -24,15 +25,26 @@ export type RatingRecord = {
   post_id: string;
   user_id: string;
   value: number;
+  comment?: string | null;
+  updated_at?: string;
 };
 
 export type PostWithRatings = PostRecord & {
-  ratings?: { user_id: string; value: number }[];
+  ratings?: { user_id: string; value: number; comment?: string | null; updated_at?: string }[];
 };
 
 export type PostWithStats = PostRecord & {
   avg_rating: number;
   rating_count: number;
   user_rating: number | null;
+  profile?: ProfileRecord | null;
+  ratings_with_profiles?: RatingWithProfile[];
+};
+
+export type RatingWithProfile = {
+  user_id: string;
+  value: number;
+  comment: string | null;
+  updated_at: string | null;
   profile?: ProfileRecord | null;
 };
