@@ -6,7 +6,6 @@ import { buildPublicMediaUrl } from "@/lib/media";
 import { formatProfileName } from "@/lib/profile";
 import type { PostWithStats } from "@/lib/types";
 
-import { RatingWidget } from "./RatingWidget";
 import { RatingList } from "./RatingList";
 import { RateForm } from "./RateForm";
 
