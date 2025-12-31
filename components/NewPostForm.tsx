@@ -4,9 +4,11 @@ import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 import type { PostKind } from "@/lib/types";
+import { AudioRecorder } from "./AudioRecorder";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 20 * 1024 * 1024;
+const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 
 export function NewPostForm() {
   const router = useRouter();
@@ -49,6 +51,19 @@ export function NewPostForm() {
       return;
     }
 
+    if (kind === "audio") {
+      if (!inputFile.type.startsWith("audio/")) {
+        setStatus("Please choose an audio file.");
+        return;
+      }
+      if (inputFile.size > MAX_AUDIO_BYTES) {
+        setStatus("Audio must be 10MB or less.");
+        return;
+      }
+      setFile(inputFile);
+      return;
+    }
+
     if (kind === "video") {
       if (!inputFile.type.startsWith("video/")) {
         setStatus("Please choose a video file.");
@@ -84,8 +99,8 @@ export function NewPostForm() {
       return;
     }
 
-    if ((kind === "image" || kind === "video") && !file) {
-      setStatus("Attach a file for image/video posts.");
+    if ((kind === "image" || kind === "video" || kind === "audio") && !file) {
+      setStatus("Attach a file for media posts.");
       return;
     }
 
@@ -123,6 +138,7 @@ export function NewPostForm() {
   const fileHint = useMemo(() => {
     if (kind === "image") return "PNG/JPEG/GIF up to 5MB.";
     if (kind === "video") return "MP4/WebM up to 20MB and 10 seconds.";
+    if (kind === "audio") return "Audio (mp3/wav) up to 30seconds or 10MB .";
     return null;
   }, [kind]);
 
@@ -130,7 +146,7 @@ export function NewPostForm() {
     <div className="panel card" style={{ padding: 20 }}>
       <div className="stack">
         <div className="row">
-          {(["text", "image", "video"] as PostKind[]).map((option) => (
+          {(["text", "image", "video", "audio"] as PostKind[]).map((option) => (
             <button
               key={option}
               type="button"
@@ -174,10 +190,17 @@ export function NewPostForm() {
               id="file"
               name="file"
               type="file"
-              accept={kind === "image" ? "image/*" : "video/*"}
+              accept={
+                kind === "image" ? "image/*" : kind === "video" ? "video/*" : "audio/*"
+              }
               onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
             />
             <div className="muted">{fileHint}</div>
+            {kind === "audio" ? (
+              <div style={{ marginTop: 8 }}>
+                <AudioRecorder onRecorded={(f) => handleFileChange(f)} />
+              </div>
+            ) : null}
             {file ? (
               <div className="muted">
                 Selected: {file.name} ({Math.round(file.size / 1024)} KB)

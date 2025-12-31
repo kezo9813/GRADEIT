@@ -6,7 +6,7 @@ create table if not exists public.posts (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
   user_id uuid not null references auth.users (id) on delete cascade,
-  kind text not null check (kind in ('text', 'image', 'video')),
+  kind text not null check (kind in ('text', 'image', 'video', 'audio')),
   title text null,
   text_content text null,
   media_path text null,

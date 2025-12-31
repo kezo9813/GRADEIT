@@ -44,13 +44,20 @@ export function PostCard({ post, userId, showActions }: PostCardProps) {
           <div className="media">
             {post.kind === "image" ? (
               <img src={mediaUrl} alt={post.title ?? "Post media"} style={{ width: "100%", display: "block" }} />
-            ) : (
+            ) : post.kind === "video" ? (
               <video
                 src={mediaUrl}
                 controls
                 preload="metadata"
                 style={{ width: "100%", display: "block" }}
                 aria-label="Video attachment"
+              />
+            ) : (
+              <audio
+                src={mediaUrl}
+                controls
+                style={{ width: "100%", display: "block", padding: "8px 0" }}
+                aria-label="Audio attachment"
               />
             )}
           </div>

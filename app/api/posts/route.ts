@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 20 * 1024 * 1024;
+const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 
 export async function POST(req: NextRequest) {
   const { supabase, applyCookies } = createSupabaseRouteClient(req);
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
   const durationStr = (form.get("duration_ms") as string | null) || null;
   const file = form.get("file");
 
-  const allowedKinds: PostKind[] = ["text", "image", "video"];
+  const allowedKinds: PostKind[] = ["text", "image", "video", "audio"];
   if (!allowedKinds.includes(kind as PostKind)) {
     return applyCookies(NextResponse.json({ error: "Invalid post kind" }, { status: 400 }));
   }
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
   let videoDurationMs: number | null = null;
   let uploadedPath: string | null = null;
 
-  if (kind === "image" || kind === "video") {
+  if (kind === "image" || kind === "video" || kind === "audio") {
     if (!(file instanceof File)) {
       return applyCookies(
         NextResponse.json({ error: "Media is required for this post type." }, { status: 400 }),
@@ -66,6 +67,11 @@ export async function POST(req: NextRequest) {
         NextResponse.json({ error: "Only video uploads are allowed." }, { status: 400 }),
       );
     }
+    if (kind === "audio" && !file.type.startsWith("audio/")) {
+      return applyCookies(
+        NextResponse.json({ error: "Only audio uploads are allowed." }, { status: 400 }),
+      );
+    }
 
     if (kind === "image" && file.size > MAX_IMAGE_BYTES) {
       return applyCookies(
@@ -76,6 +82,11 @@ export async function POST(req: NextRequest) {
     if (kind === "video" && file.size > MAX_VIDEO_BYTES) {
       return applyCookies(
         NextResponse.json({ error: "Videos must be 20MB or less." }, { status: 400 }),
+      );
+    }
+    if (kind === "audio" && file.size > MAX_AUDIO_BYTES) {
+      return applyCookies(
+        NextResponse.json({ error: "Audio must be 10MB or less." }, { status: 400 }),
       );
     }
 

@@ -1,4 +1,4 @@
-export type PostKind = "text" | "image" | "video";
+export type PostKind = "text" | "image" | "video" | "audio";
 
 export type ProfileRecord = {
   id: string;
