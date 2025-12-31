@@ -244,6 +244,9 @@ label {
   z-index: 20;
   background: linear-gradient(180deg, rgba(11, 14, 22, 0.9), rgba(11, 14, 22, 0.7));
   backdrop-filter: blur(12px);
+  border-radius: 12px;
+  padding-bottom: 10px;
+
 }
 
 .brand {
