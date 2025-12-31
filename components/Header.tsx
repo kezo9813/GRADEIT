@@ -14,19 +14,22 @@ export function Header({ user }: HeaderProps) {
         <span>Grade it</span>
       </Link>
       <div className="nav-links">
-        <Link className="btn secondary" href="/">
-          Feed
-        </Link>
         {user ? (
           <>
-            <Link className="btn" href="/new">
+            <Link className="btn" href="/new" title="New post">
+              <span aria-hidden>＋</span>
               New post
             </Link>
-            <Link className="btn secondary" href="/profile">
+            <Link className="btn secondary" href="/" title="Feed">
+              <span aria-hidden>⌂</span>
+              Feed
+            </Link>
+            <Link className="btn secondary" href="/profile" title="Profile">
+              <span aria-hidden>👤</span>
               Profile
             </Link>
-            <form action="/logout" method="post">
-              <button className="btn secondary" type="submit">
+            <form action="/logout" method="post" style={{ marginLeft: 8 }}>
+              <button className="btn secondary small" type="submit" title="Log out">
                 Log out
               </button>
             </form>

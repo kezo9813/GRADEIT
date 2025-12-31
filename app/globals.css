@@ -75,6 +75,11 @@ a {
   border: 1px solid var(--border);
 }
 
+.btn.small {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
 .btn.danger {
   background: linear-gradient(120deg, #ff708d, #ff5f7a);
   color: #fff;
