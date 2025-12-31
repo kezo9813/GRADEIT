@@ -25,6 +25,14 @@ create table if not exists public.ratings (
   unique (post_id, user_id)
 );
 
+create table if not exists public.profiles (
+  id uuid primary key references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  full_name text null,
+  avatar_path text null
+);
+
 create or replace function public.handle_updated_at()
 returns trigger as $$
 begin
@@ -36,6 +44,11 @@ $$ language plpgsql;
 drop trigger if exists handle_updated_at on public.ratings;
 create trigger handle_updated_at
 before update on public.ratings
+for each row execute procedure public.handle_updated_at();
+
+drop trigger if exists handle_updated_at on public.profiles;
+create trigger handle_updated_at
+before update on public.profiles
 for each row execute procedure public.handle_updated_at();
 
 create or replace view public.post_rating_stats as
@@ -51,6 +64,7 @@ group by p.id;
 -- RLS
 alter table public.posts enable row level security;
 alter table public.ratings enable row level security;
+alter table public.profiles enable row level security;
 
 create policy "Public read posts" on public.posts
 for select using (true);
@@ -76,6 +90,18 @@ for update using (auth.uid() = user_id);
 create policy "Delete own ratings" on public.ratings
 for delete using (auth.uid() = user_id);
 
+create policy "Public read profiles" on public.profiles
+for select using (true);
+
+create policy "Insert own profile" on public.profiles
+for insert with check (auth.uid() = id);
+
+create policy "Update own profile" on public.profiles
+for update using (auth.uid() = id);
+
+create policy "Delete own profile" on public.profiles
+for delete using (auth.uid() = id);
+
 -- Storage bucket + policies
 insert into storage.buckets (id, name, public)
 values ('media', 'media', true)
@@ -97,6 +123,39 @@ create policy "Users manage their objects"
 on storage.objects for delete
 using (
   bucket_id = 'media'
+  and auth.uid() = owner
+  and split_part(name, '/', 1) = auth.uid()::text
+);
+
+-- Avatar bucket
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do update set public = true;
+
+create policy "Public read avatars"
+on storage.objects for select
+using (bucket_id = 'avatars');
+
+create policy "Users can upload avatar to own folder"
+on storage.objects for insert
+with check (
+  bucket_id = 'avatars'
+  and auth.uid() = owner
+  and split_part(name, '/', 1) = auth.uid()::text
+);
+
+create policy "Users manage their avatar objects"
+on storage.objects for delete
+using (
+  bucket_id = 'avatars'
+  and auth.uid() = owner
+  and split_part(name, '/', 1) = auth.uid()::text
+);
+
+create policy "Users update avatar metadata"
+on storage.objects for update
+using (
+  bucket_id = 'avatars'
   and auth.uid() = owner
   and split_part(name, '/', 1) = auth.uid()::text
 );

@@ -12,10 +12,11 @@ Minimal Next.js + Supabase app where anyone can browse posts and authenticated u
 2. Copy environment template: create `.env.local` with:
    - `NEXT_PUBLIC_SUPABASE_URL=...`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY=...`
+   - `NEXT_PUBLIC_SITE_URL=https://your-production-domain.com` (used for Supabase email redirect)
 3. Set up Supabase:
    - Create a new project.
-   - In SQL editor, run the contents of `supabase.sql` (tables, RLS, storage policies, view).
-   - Ensure the `media` storage bucket exists (the script creates/updates it to public read).
+   - In SQL editor, run the contents of `supabase.sql` (tables, RLS, storage policies, view, `avatars` bucket).
+   - Ensure storage buckets exist: `media` (public read) and `avatars` (public read). The SQL script creates/updates them; if uploads say "Bucket not found", re-run the script or create the buckets manually.
 4. Dev server: `npm run dev` (http://localhost:3000)
 5. Lint: `npm run lint`
 
@@ -28,6 +29,8 @@ Minimal Next.js + Supabase app where anyone can browse posts and authenticated u
 - `POST /api/rate` rate/update rating (auth only)
 - `POST /api/posts/[id]/delete` soft delete own post (auth only, owner)
 - `POST /logout` sign out
+- `GET /profile` edit your display name + avatar (auth only)
+- `GET /u/[id]` view a user’s profile and their posts
 
 ## Auth
 - Supabase email + password.
@@ -45,6 +48,7 @@ See `supabase.sql` for:
 - RLS policies (public reads; inserts/updates/deletes require ownership)
 - View: `post_rating_stats` (optional aggregate)
 - Storage policies for `media` bucket
+- Profiles table + `avatars` bucket for user display name/photo
 
 ## Acceptance checklist (self-verify)
 - [ ] Anonymous user can open `/` and `/p/[id]` and see media/rating stats.
@@ -54,6 +58,7 @@ See `supabase.sql` for:
 - [ ] Rating: logged-in user can rate/update once per post; averages/counts update; anonymous users cannot rate.
 - [ ] Delete: author can soft delete their post; post disappears from feed/detail.
 - [ ] Lint passes: `npm run lint`.
+- [ ] Profile: edit name/avatar at `/profile`, avatar stored in `avatars` bucket; profile info shows on posts and links to `/u/[id]`.
 
 ## Notes
 - Feed/detail queries use RLS-friendly Supabase client with dynamic rendering (no static caching).

@@ -3,6 +3,13 @@ type SupabaseEnv = {
   supabaseAnonKey: string;
 };
 
+export function getSiteUrl() {
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+  return process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+}
+
 export function getSupabaseEnv(): SupabaseEnv {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

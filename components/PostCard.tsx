@@ -1,7 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 
+import { Avatar } from "@/components/Avatar";
 import { buildPublicMediaUrl } from "@/lib/media";
+import { formatProfileName } from "@/lib/profile";
 import type { PostWithStats } from "@/lib/types";
 
 import { RatingWidget } from "./RatingWidget";
@@ -19,12 +21,17 @@ export function PostCard({ post, userId, showActions }: PostCardProps) {
   return (
     <article className="panel card">
       <div className="card-meta">
-        <div className="row">
-          <span className="badge">{post.kind.toUpperCase()}</span>
-          <span className="pill small">Owner: {post.user_id.slice(0, 6)}…</span>
-        </div>
+        <Link href={`/u/${post.user_id}`} className="row" style={{ textDecoration: "none" }}>
+          <Avatar profile={post.profile} size={42} />
+          <div className="stack" style={{ gap: 2 }}>
+            <span className="pill soft">{formatProfileName(post.profile)}</span>
+            <span className="muted" style={{ fontSize: 12 }}>
+              {created.toLocaleString()}
+            </span>
+          </div>
+        </Link>
         <div className="row" style={{ gap: 8 }}>
-          <span className="muted">{created.toLocaleString()}</span>
+          <span className="badge">{post.kind.toUpperCase()}</span>
           <Link className="pill" href={`/p/${post.id}`}>
             Open ↗
           </Link>

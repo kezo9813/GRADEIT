@@ -1,5 +1,11 @@
 export type PostKind = "text" | "image" | "video";
 
+export type ProfileRecord = {
+  id: string;
+  full_name: string | null;
+  avatar_path: string | null;
+};
+
 export type PostRecord = {
   id: string;
   created_at: string;
@@ -28,4 +34,5 @@ export type PostWithStats = PostRecord & {
   avg_rating: number;
   rating_count: number;
   user_rating: number | null;
+  profile?: ProfileRecord | null;
 };

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { getSiteUrl } from "@/lib/env";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 export function AuthForm() {
@@ -26,12 +27,11 @@ export function AuthForm() {
           setSubmitting(false);
           return;
         }
-        const redirectTo =
-          typeof window !== "undefined" ? `${window.location.origin}/login` : undefined;
+        const redirectTo = `${getSiteUrl()}/login`;
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: redirectTo ? { emailRedirectTo: redirectTo } : undefined,
+          options: { emailRedirectTo: redirectTo },
         });
         if (error) {
           setStatus(error.message);

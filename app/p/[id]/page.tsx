@@ -1,9 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { Avatar } from "@/components/Avatar";
 import { DeleteButton } from "@/components/DeleteButton";
 import { RatingWidget } from "@/components/RatingWidget";
 import { buildPublicMediaUrl } from "@/lib/media";
+import { formatProfileName } from "@/lib/profile";
 import { toPostWithStats } from "@/lib/posts";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { PostWithRatings } from "@/lib/types";
@@ -34,8 +37,14 @@ export default async function PostDetailPage({
     notFound();
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, full_name, avatar_path")
+    .eq("id", record.user_id)
+    .maybeSingle();
+
   const userId = userData.user?.id ?? null;
-  const post = toPostWithStats(record, userId);
+  const post = { ...toPostWithStats(record, userId), profile: profile ?? null };
   const mediaUrl = buildPublicMediaUrl(post.media_path);
   const created = new Date(post.created_at);
   const isOwner = userId === post.user_id;
@@ -44,10 +53,23 @@ export default async function PostDetailPage({
     <main className="stack">
       <article className="panel card" style={{ padding: 20 }}>
         <div className="row" style={{ justifyContent: "space-between" }}>
-          <div className="row">
+          <Link
+            className="row"
+            style={{ gap: 12, alignItems: "center", textDecoration: "none" }}
+            href={`/u/${post.user_id}`}
+          >
+            <Avatar profile={post.profile} size={48} />
+            <div className="stack" style={{ gap: 2 }}>
+              <span className="pill soft">{formatProfileName(post.profile)}</span>
+              <span className="muted" style={{ fontSize: 12 }}>
+                {created.toLocaleString()}
+              </span>
+            </div>
             <span className="badge">{post.kind.toUpperCase()}</span>
-            <span className="muted">{created.toLocaleString()}</span>
-          </div>
+          </Link>
+          <Link className="pill" href={`/u/${post.user_id}`}>
+            View profile ↗
+          </Link>
         </div>
         <div className="stack" style={{ marginTop: 10 }}>
           {post.title ? <h1 className="section-title">{post.title}</h1> : null}
@@ -74,9 +96,9 @@ export default async function PostDetailPage({
                 /5 · {post.rating_count} vote{post.rating_count === 1 ? "" : "s"}
               </span>
             </div>
-            <div className="muted">
-              Owner: {post.user_id.slice(0, 6)}…{post.user_id.slice(-4)}
-            </div>
+            <Link className="pill soft" href={`/u/${post.user_id}`}>
+              {formatProfileName(post.profile)}
+            </Link>
           </div>
           <RatingWidget
             postId={post.id}

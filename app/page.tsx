@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { PostCard } from "@/components/PostCard";
+import { attachProfilesToPosts } from "@/lib/profile";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { toPostWithStats } from "@/lib/posts";
 import type { PostWithRatings } from "@/lib/types";
@@ -29,6 +30,17 @@ export default async function HomePage() {
   const userId = userData.user?.id ?? null;
   const hydrated = (posts ?? []).map((post) => toPostWithStats(post as PostWithRatings, userId));
 
+  const userIds = Array.from(new Set(hydrated.map((p) => p.user_id)));
+  const { data: profiles } =
+    userIds.length > 0
+      ? await supabase
+          .from("profiles")
+          .select("id, full_name, avatar_path")
+          .in("id", userIds)
+      : { data: [] };
+
+  const postsWithProfiles = attachProfilesToPosts(hydrated, profiles);
+
   return (
     <main className="stack">
       <div className="panel card center-logo">
@@ -43,9 +55,7 @@ export default async function HomePage() {
             <p className="muted">No posts yet. Be the first to share something.</p>
           </div>
         ) : (
-          hydrated.map((post) => (
-            <PostCard key={post.id} post={post} userId={userId} showActions />
-          ))
+          postsWithProfiles.map((post) => <PostCard key={post.id} post={post} userId={userId} showActions />)
         )}
       </div>
     </main>

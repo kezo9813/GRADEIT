@@ -22,6 +22,9 @@ export function Header({ user }: HeaderProps) {
             <Link className="btn" href="/new">
               New post
             </Link>
+            <Link className="btn secondary" href="/profile">
+              Profile
+            </Link>
             <form action="/logout" method="post">
               <button className="btn secondary" type="submit">
                 Log out
