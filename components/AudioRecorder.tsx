@@ -162,14 +162,15 @@ export function AudioRecorder({ onRecorded }: AudioRecorderProps) {
     analyserRef.current = ctx.createAnalyser();
     analyserRef.current.fftSize = 64;
     const bufferLength = analyserRef.current.frequencyBinCount;
-    dataArrayRef.current = new Uint8Array(bufferLength);
+    const arr = new Uint8Array(bufferLength);
+    // dataArrayRef.current = new Uint8Array(bufferLength);
     source.connect(analyserRef.current);
     analyserRef.current.connect(ctx.destination);
 
     const draw = () => {
-      if (!analyserRef.current || !dataArrayRef.current) return;
-      analyserRef.current.getByteFrequencyData(dataArrayRef.current);
-      const slice = Array.from(dataArrayRef.current).slice(0, 24);
+      if (!analyserRef.current) return;
+      analyserRef.current.getByteFrequencyData(arr);
+      const slice = Array.from(arr).slice(0, 24);
       setLevels(slice);
       rafRef.current = requestAnimationFrame(draw);
     };
